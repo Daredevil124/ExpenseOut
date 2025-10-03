@@ -1,0 +1,1 @@
+// Header component - template ready

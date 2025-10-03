@@ -1,0 +1,170 @@
+EXPENSE MANAGEMENT SYSTEM - ENTITY RELATIONSHIP DIAGRAM
+================================================================
+
+CORE ENTITIES AND RELATIONSHIPS:
+
+1. USER MANAGEMENT
+   ┌─────────────┐    ┌──────────────┐
+   │   users     │    │ departments  │
+   ├─────────────┤    ├──────────────┤
+   │ id (PK)     │◄───┤ id (PK)      │
+   │ username    │    │ name         │
+   │ email       │    │ code         │
+   │ first_name  │    │ budget_limit │
+   │ last_name   │    │ manager_id   │
+   │ employee_id │    └──────────────┘
+   │ department_id│
+   │ manager_id  │
+   │ role        │
+   └─────────────┘
+
+2. EXPENSE CATEGORIZATION
+   ┌─────────────────┐    ┌──────────────────┐
+   │expense_categories│    │expense_subcategories│
+   ├─────────────────┤    ├──────────────────┤
+   │ id (PK)         │◄───┤ id (PK)          │
+   │ name            │    │ category_id (FK) │
+   │ code            │    │ name             │
+   │ requires_receipt│    │ code             │
+   │ requires_approval│   │ description      │
+   │ max_amount      │    └──────────────────┘
+   └─────────────────┘
+
+3. EXPENSE MANAGEMENT
+   ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+   │expense_reports│   │   expenses   │    │  projects   │
+   ├─────────────┤    ├──────────────┤    ├─────────────┤
+   │ id (PK)     │◄───┤ id (PK)      │    │ id (PK)     │
+   │ user_id (FK)│    │ report_id(FK)│    │ name        │
+   │ title       │    │ user_id (FK) │    │ code        │
+   │ total_amount│    │ category_id  │    │ client_name │
+   │ status      │    │ subcategory_id│   │ budget      │
+   │ submitted_at│    │ project_id   │    │ status      │
+   │ approved_by │    │ amount       │    └─────────────┘
+   └─────────────┘    │ expense_date │
+                      │ status       │
+                      └──────────────┘
+
+4. APPROVAL WORKFLOW
+   ┌─────────────────┐    ┌──────────────┐    ┌─────────────────┐
+   │approval_workflows│   │approval_rules│    │expense_approvals│
+   ├─────────────────┤    ├──────────────┤    ├─────────────────┤
+   │ id (PK)         │◄───┤ id (PK)      │    │ id (PK)         │
+   │ name            │    │ workflow_id  │    │ expense_id (FK) │
+   │ description     │    │ department_id│    │ approver_id (FK)│
+   └─────────────────┘    │ category_id  │    │ approval_level  │
+                          │ approver_id  │    │ status          │
+                          │ min_amount   │    └─────────────────┘
+                          └──────────────┘
+
+5. BUDGET MANAGEMENT
+   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+   │departments  │    │  projects   │    │  budgets    │
+   ├─────────────┤    ├─────────────┤    ├─────────────┤
+   │ id (PK)     │    │ id (PK)     │    │ id (PK)     │
+   │ name        │    │ name        │    │ department_id│
+   │ budget_limit│    │ budget      │    │ project_id  │
+   └─────────────┘    └─────────────┘    │ category_id │
+                                         │ allocated   │
+                                         │ spent       │
+                                         │ remaining   │
+                                         └─────────────┘
+
+6. SUPPORTING ENTITIES
+   ┌─────────────┐    ┌─────────────────┐    ┌─────────────┐
+   │company_cards│    │receipt_attachments│   │notifications│
+   ├─────────────┤    ├─────────────────┤    ├─────────────┤
+   │ id (PK)     │    │ id (PK)         │    │ id (PK)     │
+   │ card_number │    │ expense_id (FK) │    │ user_id (FK)│
+   │ user_id (FK)│    │ file_name       │    │ title       │
+   │ department_id│   │ file_path       │    │ message     │
+   │ credit_limit│    │ uploaded_by     │    │ is_read     │
+   └─────────────┘    └─────────────────┘    └─────────────┘
+
+7. AUDIT AND SYSTEM
+   ┌─────────────┐    ┌─────────────────┐
+   │ audit_logs  │    │system_settings  │
+   ├─────────────┤    ├─────────────────┤
+   │ id (PK)     │    │ id (PK)         │
+   │ table_name  │    │ setting_key     │
+   │ record_id   │    │ setting_value   │
+   │ action      │    │ description     │
+   │ old_values  │    │ data_type       │
+   │ new_values  │    └─────────────────┘
+   │ user_id (FK)│
+   └─────────────┘
+
+KEY RELATIONSHIPS:
+==================
+
+1. HIERARCHICAL RELATIONSHIPS:
+   - users.manager_id → users.id (self-referencing)
+   - departments.manager_id → users.id
+   - users.department_id → departments.id
+
+2. EXPENSE FLOW:
+   - expenses.user_id → users.id
+   - expenses.report_id → expense_reports.id
+   - expenses.category_id → expense_categories.id
+   - expenses.subcategory_id → expense_subcategories.id
+   - expenses.project_id → projects.id
+
+3. APPROVAL CHAIN:
+   - expense_approvals.expense_id → expenses.id
+   - expense_approvals.approver_id → users.id
+   - approval_rules.workflow_id → approval_workflows.id
+   - approval_rules.approver_id → users.id
+
+4. BUDGET TRACKING:
+   - budgets.department_id → departments.id
+   - budgets.project_id → projects.id
+   - budgets.category_id → expense_categories.id
+
+5. AUDIT TRAIL:
+   - audit_logs.user_id → users.id
+   - All tables have audit logging capability
+
+BUSINESS RULES IMPLEMENTED:
+===========================
+
+1. EXPENSE VALIDATION:
+   - Receipt requirements based on category and amount
+   - Maximum amounts per category
+   - Currency conversion support
+   - Project association validation
+
+2. APPROVAL WORKFLOW:
+   - Multi-level approval based on amount and category
+   - Department-specific approval routing
+   - Manager hierarchy approval
+   - Automatic approval for small amounts
+
+3. BUDGET MANAGEMENT:
+   - Department and project budget tracking
+   - Real-time budget vs. actual spending
+   - Budget alerts and notifications
+   - Multi-period budget support
+
+4. COMPLIANCE AND AUDIT:
+   - Complete audit trail for all changes
+   - Receipt attachment requirements
+   - Data retention policies
+   - User activity tracking
+
+PERFORMANCE OPTIMIZATIONS:
+==========================
+
+1. INDEXING STRATEGY:
+   - Primary key indexes on all tables
+   - Foreign key indexes for joins
+   - Composite indexes for common queries
+   - Status-based indexes for filtering
+
+2. QUERY OPTIMIZATION:
+   - Computed columns for calculated fields
+   - Proper data types for efficient storage
+   - Normalized structure to reduce redundancy
+
+This schema provides a comprehensive foundation for an expense management system
+that can handle complex business requirements while maintaining data integrity
+and performance.

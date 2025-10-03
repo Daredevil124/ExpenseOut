@@ -1,0 +1,1 @@
+// Input component - template ready

@@ -1,0 +1,1 @@
+// Notification controller - template ready

@@ -1,0 +1,1 @@
+// Approvals hook - template ready

@@ -1,0 +1,1 @@
+// AWS configuration - template ready

@@ -1,0 +1,1 @@
+// Authentication routes - template ready

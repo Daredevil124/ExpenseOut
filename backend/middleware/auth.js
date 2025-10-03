@@ -1,0 +1,1 @@
+// Authentication middleware - template ready

@@ -1,0 +1,1 @@
+// Helper functions - template ready
